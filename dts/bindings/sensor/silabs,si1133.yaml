@@ -1,0 +1,13 @@
+# Copyright (c) 2019, Electronut Labs
+# SPDX-License-Identifier: Apache-2.0
+
+description: Si1133 luminecence and UV sensor
+
+compatible: "silabs,si1133"
+
+properties:
+    irq-gpios:
+      type: phandle-array
+      required: false
+
+include: i2c-device.yaml
