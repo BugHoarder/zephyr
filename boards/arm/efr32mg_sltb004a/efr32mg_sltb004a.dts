@@ -110,7 +110,9 @@
 };
 
 &i2c1 {
-	/* This set selects for CCS811_I2C supporting CCS811 */
+	status = "okay";
+    
+    /* This set selects for CCS811_I2C supporting CCS811 */
 	/*
 	location-sda = <GECKO_LOCATION(6) GECKO_PORT_B GECKO_PIN(6)>;
 	location-scl = <GECKO_LOCATION(6) GECKO_PORT_B GECKO_PIN(7)>;
@@ -141,7 +143,7 @@
 	location-sda = <GECKO_LOCATION(8) GECKO_PORT_B GECKO_PIN(8)>;
 	location-scl = <GECKO_LOCATION(8) GECKO_PORT_B GECKO_PIN(9)>;
 	*/
-	status = "okay";
+	
 };
 
 &rtcc0 {
