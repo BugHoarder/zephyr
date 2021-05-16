@@ -1,0 +1,36 @@
+//read i2c part ID 	0x00
+i2c_reg_read_byte(data->i2c_master, data->i2c_addr, SI1133_REG_PART_ID, &part_id);
+
+//read response0 register 	0x11 for err checking 5th lsb  and command counter lower 4 lsb
+i2c_reg_read_byte(data->i2c_master, data->i2c_addr, SI1133_REG_RESPONSE0, &response0);
+
+//write data to be written to param table in HOSTIN0 reg 	0x0A
+i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_HOSTIN0, test);
+	
+//parem set for xxxxxx param register
+i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_COMMAND, 0b10xxxxxx);
+
+//parem query set xxxxxx param register
+i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_COMMAND, 0b01xxxxxx);
+
+//read response1 register	0x10 after param query
+i2c_reg_read_byte(data->i2c_master, data->i2c_addr, SI1133_REG_RESPONSE1, &response1);
+
+//interrupt status for channel n when data is ready
+i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_IRQ_STATUS, 1<<n);
+
+
+//enable burst mode in global area of parameter table at 0x2B
+	//write 0b10000000 for enabling 7th bit of burst regt in HOSTIN0 reg 	0x0A
+		i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_HOSTIN0, 0b10000000);
+	//parem set for 0x2B param register
+		i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_COMMAND, 0b10(+0x2B));
+		i2c_burst_read(data->i2c_master, data->i2c_addr, HOSTOUTPUT0, buf, num_bytes)
+
+
+
+
+
+
+
+

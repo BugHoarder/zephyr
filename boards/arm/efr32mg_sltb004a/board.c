@@ -29,7 +29,7 @@ static int enable_supply(const struct supply_cfg *cfg)
 }
 
 static int efr32mg_sltb004a_init(const struct device *dev)
-{
+{		
 	struct supply_cfg cfg;
 	int rc = 0;
 
@@ -51,6 +51,22 @@ static int efr32mg_sltb004a_init(const struct device *dev)
 		printk("CCS811 supply not enabled: %d\n", rc);
 	}
 #endif
+/*
+#define SI1133 DT_NODELABEL(si1133)
+
+#if DT_NODE_HAS_STATUS(SI1133, okay)
+	cfg = (struct supply_cfg){
+		.gpio = DEVICE_DT_GET(DT_GPIO_CTLR(SI1133, supply_gpios)),
+		.pin = DT_GPIO_PIN(SI1133, supply_gpios),
+		.flags = DT_GPIO_FLAGS(SI1133, supply_gpios),
+	};
+
+	// Enable the SI1133 power 
+	rc = enable_supply(&cfg);
+	if (rc < 0) {
+		printk("SI1133 supply not enabled: %d\n", rc);
+	}
+#endif*/
 
 	return rc;
 }
