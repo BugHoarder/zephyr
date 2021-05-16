@@ -1,0 +1,22 @@
+
+
+mainmenu "SI1133"
+
+choice
+	prompt "SI1133 Trigger On"
+	default APP_TRIGGER_ON_DATAREADY
+	depends on SI1133_TRIGGER
+	help
+	  Select the type of trigger to use
+
+config APP_TRIGGER_ON_DATAREADY
+	bool "Trigger on data ready"
+
+endchoice
+
+CONFIG_STDOUT_CONSOLE=y
+CONFIG_I2C=y
+CONFIG_SENSOR=y
+CONFIG_SI1133=y
+
+source "Kconfig.zephyr"
