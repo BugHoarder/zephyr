@@ -63,7 +63,7 @@ static int si1133_sample_fetch(const struct device *dev, enum sensor_channel cha
 		printk("Samples read failed with rc=%d\n", ret);
 	}
 
-	data->lux =  ((large_white[1] << 8) | large_white[0]);
+	data->lux =  ((large_white[0] << 8) | large_white[1]);
 	printk("29 Sensor data is =%d\n", data->lux);
 
 	return 0;
@@ -81,7 +81,7 @@ static int si1133_init(const struct device *dev)
 	struct si1133_dev_data *data = dev->data;
 	const struct si1133_dev_config *cfg = dev->config;
 	int ret;
-	uint8_t part_id, response0, response1;
+	//uint8_t part_id, response0, response1;
 
 	data->i2c_addr = cfg->i2c_addr;
 	data->i2c_master = device_get_binding(cfg->i2c_master_name);
@@ -90,11 +90,6 @@ static int si1133_init(const struct device *dev)
 		LOG_ERR("i2c master not found");
 		return -ENODEV;
 	}
-
-	//power in board.c file
-	const struct device *portf = device_get_binding("GPIO_F");
-	gpio_pin_configure(portf, 9, GPIO_OUTPUT_ACTIVE);
-	gpio_pin_set(portf, 9, 1);
 
 	//channel setup
 	//channel 0 is 0b00000001 at 0x01
@@ -114,7 +109,7 @@ static int si1133_init(const struct device *dev)
 	
 	//channel 0 config
 	//ADCCONFIG0 = 0b00001101
-	ret = si1133_param_write(data, 0b00000010);
+	ret = si1133_param_write(data, 0b00001101);
 	if (ret != 0){
 		printk("ADCCONFIG0 param write failed with error number: %d\n", ret);
 	}

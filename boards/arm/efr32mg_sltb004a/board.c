@@ -51,7 +51,7 @@ static int efr32mg_sltb004a_init(const struct device *dev)
 		printk("CCS811 supply not enabled: %d\n", rc);
 	}
 #endif
-/*
+
 #define SI1133 DT_NODELABEL(si1133)
 
 #if DT_NODE_HAS_STATUS(SI1133, okay)
@@ -66,8 +66,7 @@ static int efr32mg_sltb004a_init(const struct device *dev)
 	if (rc < 0) {
 		printk("SI1133 supply not enabled: %d\n", rc);
 	}
-#endif*/
-
+#endif
 	return rc;
 }
 
