@@ -19,43 +19,92 @@ struct si1133_dev_data {
 	uint16_t lux;
 };
 
+static inline int si1133_reg_cmd_write(const struct si1133_dev_data *const data, uint8_t add, uint8_t cmd)
+{
+	return i2c_reg_write_byte(data->i2c_master, data->i2c_addr, add, cmd);	
+}
+
+static inline int si1133_reg_read(const struct si1133_dev_data *const data, uint8_t add, uint8_t* output_value)
+{
+	return i2c_reg_read_byte(data->i2c_master, data->i2c_addr, add, output_value);		
+}
+
+
 static inline int si1133_rst_cmd_ctr(const struct si1133_dev_data *const data)
 {
-	return i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_COMMAND, SI1133_CMD_RST_CMD_CTR);	
+	return si1133_reg_cmd_write(data, SI1133_REG_COMMAND, SI1133_CMD_RST_CMD_CTR);	
 }
 
-static inline int si1133_param_write(const struct si1133_dev_data *const data, uint8_t cmd)
+static inline int si1133_rst_and_read_cmd_ctr(const struct si1133_dev_data *const data, uint8_t* cmd_ctr)
 {
-	return i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_HOSTIN0, cmd);	
+	 uint8_t cnt;
+	 int ret;
+	ret = si1133_rst_cmd_ctr(data);
+	if (ret < 0) {
+		return ret;
+	}
+
+	si1133_reg_read(data, SI1133_REG_RESPONSE0, &cnt);
+	*cmd_ctr = (cnt & SI1133_CMD_CTR);
+	return 0;
 }
 
-static inline int si1133_param_set(const struct si1133_dev_data *const data, uint8_t add)
+static inline int si1133_poll_till_ctr_increment(const struct si1133_dev_data *const data, uint8_t cmd_ctr)
 {
-	uint8_t cmd = 0b10000000;
-	cmd = cmd | add;
-	return i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_COMMAND, cmd);	
+	uint8_t ctr;
+	int ret;
+	while(true){
+		ret =  si1133_reg_read(data, SI1133_REG_RESPONSE0, &ctr);
+		if (ret)
+			return ret;
+		if(ctr & SI1133_CMD_ERR)
+			return -EINVAL;
+		if((ctr & SI1133_CMD_CTR) == cmd_ctr+1)
+			break;
+	}
+	return 0;
 }
 
 
-
+static inline int si1133_param_set(const struct si1133_dev_data *const data, uint8_t add, uint8_t param_data )
+{
+	int ret;
+	ret = si1133_reg_cmd_write(data, SI1133_REG_HOSTIN0, param_data);
+	if (ret < 0) {
+		printk("param write failed with rc=%d\n", ret);
+	}
+	uint8_t set_cmd = 0b10000000;
+	uint8_t set_add = set_cmd | add;
+	return si1133_reg_cmd_write(data, SI1133_REG_COMMAND, set_add);	
+}
 
 static int si1133_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
 	struct si1133_dev_data *data = dev->data;
 	uint8_t status;
 	uint8_t large_white[2];
+	uint8_t cmd_ctr;
 	int ret;
-		
+	//reset response0 and read cmd_ctr
+	ret = si1133_rst_and_read_cmd_ctr(data, &cmd_ctr);
+	if (ret) {
+		printk("si1133_rst_and_read_cmd_ctr failed with rc=%d\n", ret);
+	}
+
 	//force command
-	ret = i2c_reg_write_byte(data->i2c_master, data->i2c_addr, SI1133_REG_COMMAND, SI1133_CMD_FORCE);
+	ret = si1133_reg_cmd_write(data, SI1133_REG_COMMAND, SI1133_CMD_FORCE);
 	if (ret < 0) {
 		printk("force cmd failed with rc=%d\n", ret);
 	}
-	k_msleep(10);
+
+	//poll till counter increments
+	ret = si1133_poll_till_ctr_increment(data, cmd_ctr);
+	if (ret) {
+		printk("si1133_poll_till_ctr_increment failed with rc=%d\n", ret);
+	}
 
 	while(!status){
 		i2c_reg_read_byte(data->i2c_master, data->i2c_addr, SI1133_REG_IRQ_STATUS, &status);
-		printk("status value is %i\n",status);
 	}
 	
 	ret = i2c_burst_read(data->i2c_master, data->i2c_addr, SI1133_REG_HOSTOUT0, large_white, 2);
@@ -91,16 +140,17 @@ static int si1133_init(const struct device *dev)
 		return -ENODEV;
 	}
 
+	k_msleep(25);
+
+//	power in board.c file
+	const struct device *portf = device_get_binding("GPIO_F");
+	gpio_pin_configure(portf, 9, GPIO_OUTPUT_ACTIVE);
+	gpio_pin_set(portf, 9, 1);
+
+
 	//channel setup
 	//channel 0 is 0b00000001 at 0x01
-	ret = si1133_param_write(data, 0b00000001);
-	if (ret != 0){
-		printk("channel 0 param write failed with error number: %d\n", ret);
-	}
-
-	k_msleep(10);
-	
-	si1133_param_set(data, SI1133_REG_CHANNEL_LIST);
+	ret = si1133_param_set(data, SI1133_REG_CHANNEL_LIST, SI1133_CMD_ENABLE_CHANNEL0);
 	if (ret != 0){
 		printk("channel 0 param write failed with error number: %d\n", ret);
 	}
@@ -109,13 +159,7 @@ static int si1133_init(const struct device *dev)
 	
 	//channel 0 config
 	//ADCCONFIG0 = 0b00001101
-	ret = si1133_param_write(data, 0b00001101);
-	if (ret != 0){
-		printk("ADCCONFIG0 param write failed with error number: %d\n", ret);
-	}
-	k_msleep(10);
-
-	si1133_param_set(data, SI1133_REG_ADCCONFIG0);
+	ret = si1133_param_set(data, SI1133_REG_ADCCONFIG0, SI1133_CMD_ENABLE_LARGE_WHITE);
 	if (ret != 0){
 		printk("ADCCONFIG0 param set failed with error number: %d\n", ret);
 	}
