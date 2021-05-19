@@ -620,3 +620,12 @@ test_i2c_bmp388: bmp388@4c {
 	reg = <0x4c>;
 	int-gpios = <&test_gpio 0 0>;
 };
+
+test_i2c_si1133: si1133@4d {
+	compatible = "silabs,si1133";
+	label = "SI1133";
+	reg = <0x4d>;
+	supply-gpios = <&test_gpio 0 0>;
+	reset-gpios = <&test_gpio 0 0>;
+	irq-gpios = <&test_gpio 0 0>;
+};

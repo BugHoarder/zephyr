@@ -31,17 +31,18 @@ void main(void)
 	while (1) {
 		//printk("hello2\n");
 
-		struct sensor_value temp;
+		struct sensor_value white, uv, ir;
 
 		sensor_sample_fetch(dev);
-		//printk("hello3\n");
-
-		sensor_channel_get(dev, SENSOR_CHAN_AMBIENT_TEMP, &temp);
-		//printk("hello4\n");
-
-		//printk("temp: %u.%06d\n",temp.val1, temp.val2);
-		//printk("hello5\n");
-
+		sensor_channel_get(dev, SENSOR_CHAN_LIGHT, &white);
+		sensor_channel_get(dev, SENSOR_CHAN_IR, &ir);
+		sensor_channel_get(dev, SENSOR_CHAN_UV, &uv);
+	
+		printk("large white : %u\n",white.val1);
+		printk("Large IR: %u\n",ir.val1);
+		printk("UV: %u\n",uv.val1);
+		
+	
 		k_msleep(1000);
 	}
 }

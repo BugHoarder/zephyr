@@ -1,7 +1,8 @@
 # Si1133, I2C UV Index/Ambient Light Sensor.
 
-menuconfig SI1133
+config SI1133
 	bool "SI1133 UV Index/Ambient Light I2C Sensor"
 	depends on I2C
 	help
 	  Enable driver for SI1133 UV Index/Ambient Light Sensor.
+	

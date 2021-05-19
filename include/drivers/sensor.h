@@ -93,6 +93,8 @@ enum sensor_channel {
 	/** Illuminance in infra-red spectrum, in lux. */
 	SENSOR_CHAN_IR,
 	/** Illuminance in red spectrum, in lux. */
+	SENSOR_CHAN_UV,
+	/** Illuminance in UV spectrum, in lux. */
 	SENSOR_CHAN_RED,
 	/** Illuminance in green spectrum, in lux. */
 	SENSOR_CHAN_GREEN,

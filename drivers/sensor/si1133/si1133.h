@@ -9,10 +9,10 @@
 #include <stdio.h>
 
 
-#define SI1133_INIT_TIME_MS 		25
-
+#define SI1133_INIT_TIME_MS 	25
 #define SI1133_VAL_PART_ID		0x33
 
+/*Register Addresses*/
 #define SI1133_REG_COMMAND		0x0B
 #define SI1133_REG_PART_ID		0x00
 #define SI1133_REG_REV_ID		0x02
@@ -28,29 +28,46 @@
 #define SI1133_REG_IRQ_STATUS		0x12
 #define SI1133_REG_IRQ_ENABLE		0x0F
 
-
 #define SI1133_REG_CHANNEL_LIST		0x01
+
 #define SI1133_REG_ADCCONFIG0		0x02
 #define SI1133_REG_ADCSENS0			0x03
 #define SI1133_REG_ADCPOST0			0x04
 #define SI1133_REG_MEASCONFIG0		0x05
 
-#define SI1133_CMD_RST_CMD_CTR		0x00
-#define SI1133_CMD_FORCE		0x11
-#define SI1133_CMD_ENABLE_CHANNEL0		0x01
+#define SI1133_REG_ADCCONFIG1		0x06
+#define SI1133_REG_ADCSENS1			0x07
+#define SI1133_REG_ADCPOST1 		0x08
+#define SI1133_REG_MEASCONFIG1		0x09
+
+#define SI1133_REG_ADCCONFIG2		0x0A
+#define SI1133_REG_ADCSENS2			0x0B
+#define SI1133_REG_ADCPOST2 		0x0C
+#define SI1133_REG_MEASCONFIG2		0x0D
+
+/*Commands*/
+#define SI1133_CMD_ENABLE_CHANNEL0			0x01
 #define SI1133_CMD_ENABLE_LARGE_WHITE		0x0D
+#define SI1133_CMD_ENABLE_UV 				0x78
+#define SI1133_CMD_ENABLE_LARGE_IR 			0x02
+
+#define SI1133_CMD_RST_CMD_CTR				0x00
+#define SI1133_CMD_FORCE	0x11
 #define SI1133_CMD_CTR 		0x0F
 #define SI1133_CMD_ERR 		0x10
-
-
-
-
-
-
 
 struct si1133_dev_config {
 	const char *i2c_master_name;
 	uint16_t i2c_addr;
+};
+
+struct si1133_dev_data {
+	uint16_t i2c_addr;
+	const struct device *i2c_master;
+	uint16_t white;
+	uint16_t IR;
+	uint16_t UV;
+	
 };
 
 
